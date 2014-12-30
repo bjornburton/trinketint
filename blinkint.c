@@ -1,5 +1,5 @@
 /**************************************
-blinkint
+Trinketint
 Interrupt Trinket led blinker!
 2014-12-29
 Bjorn Burton
