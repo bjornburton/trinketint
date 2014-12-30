@@ -1,7 +1,9 @@
 /**************************************
 blinkint
 Interrupt Trinket led blinker!
-2014-12-30 - Bjorn Burton
+2014-12-29
+Bjorn Burton
+
 Just for fun.
 **************************************/
 // AVR clock frequency in Hz, used by util/delay.h
@@ -17,31 +19,27 @@ Just for fun.
 # define ON 1
 # define OFF 0
 
-/* Misc */
-# define TRUE 1
-# define FALSE 0
-
-/* Function Declatations */
+/* Function Declarations */
 void delay(unsigned intervals);
 void ledcntl(char state);
 void initTimerCounter1(void);
 
 /* Global variables */
-volatile char flagint = FALSE; 
+volatile char intcount = 0; 
 
 int main(void)
 {
   DDRB |= (1<<LED_RED_DD);
-  ledcntl(ON);       //turn the LED off
+  ledcntl(ON);       //turn the LED on
   initTimerCounter1();
 
-  for (;;) // forever
+ for (;;) // forever
   {
 
-  if(flagint)
+  if(intcount > 10) //after about 5 seconds, turn off
     {
      ledcntl(OFF);
-     flagint=FALSE;
+     intcount = 0;
     }
 
   }  
@@ -57,7 +55,6 @@ void ledcntl(char state)
 }
 
 
-
 void initTimerCounter1(void)
 {
  //GTCCR = 0;
@@ -65,15 +62,15 @@ void initTimerCounter1(void)
  //TCCR1 &= ~( (1<<COM1A1) | (1<<COM1A0) );
  //TCCR1 &= ~( (1<<COM1B1) | (1<<COM1B0) );
 
- /* set a prescale */
- TCCR1 = (1<<CS10);
+ /* set a long prescale */
+ TCCR1 = ((1<<CS10) | (1<<CS11) | (1<<CS12) | (1<<CS13));
+
 
  /* Timer/counter 1 ovf int enable */
  TIMSK |= (1<<TOIE1);
 
- /* Timer/Counter1 Output Compare Interrupt disable */
 
-  TCNT1 = 0;      //reset
+ TCNT1 = 12;      //reset
  
  /* global interupt enable flag */
  sei();
@@ -81,6 +78,6 @@ void initTimerCounter1(void)
 
 ISR(TIMER1_OVF_vect)
 {
- flagint = TRUE;
- TCNT1 = 0;      //reset
+ intcount++;
+ //TCNT1 = 12;      //reset
 }
