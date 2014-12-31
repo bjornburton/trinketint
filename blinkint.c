@@ -19,6 +19,10 @@ Just for fun.
 # define LED_RED_DD DDB1
 # define ON 1
 # define OFF 0
+# define TRUE 1
+# define FALSE 0
+
+
 
 /* Function Declarations */
 void delay(unsigned intervals);
@@ -49,26 +53,30 @@ int main(void)
   {
    static unsigned char intcount = 0; 
   
-  /* preset the counter at each itteration */
-  TCNT1 = 12;      //reset counter to count 244: 256-244=12
- 
- /* now we wait in idle for any interrupt event */
+  /* preset the counter at each itteration. Prescaler is clk/16484.
+     0.5 *(8e6/16384) is 244.14. 256-244=12, so 12 is it */
+  TCNT1 = 12;
+
+  /* now we wait in idle for any interrupt event */
   sleep_mode();
 
-  /* some interrupt was detected! */
-
-  if(overflow) // overflow check
+  /* some interrupt was detected! Let's see which one */
+  if(overflow == TRUE) 
     {
-      if(intcount++ == 1) //toggle after about 1/2 second
+      /* each count is about 1/2 second */
+      if(++intcount == 1) //toggle after about 1/2 second
         {
          static char toggle = 0;
          
          if(toggle = (toggle)?0:1) ledcntl(ON);
            else ledcntl(OFF);
-
+         
+         /* since it toggled the int counter is reset */
          intcount = 0;
          }
-    overflow = 0; //reset int flag
+
+    /* reset the flag */
+    overflow = FALSE; //reset int flag
     }
   }  
 
@@ -104,5 +112,5 @@ void initTimerCounter1(void)
 /* this is not much of an ISR */
 ISR(TIMER1_OVF_vect)
 {
- overflow++;
+ overflow = TRUE;
 }
